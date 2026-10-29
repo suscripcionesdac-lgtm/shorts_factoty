@@ -1,0 +1,49 @@
+{
+  "name": "shorts-factory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "shorts": "tsx src/shorts/cli.ts",
+    "demo": "tsx src/shorts/cli.ts demo",
+    "studio": "remotion studio src/shorts/remotion/index.ts",
+    "test": "vitest run",
+    "clipper": "tsx src/clips/server.ts",
+    "start": "tsx src/clips/server.ts",
+    "test:ui": "playwright test"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0",
+    "@expo-google-fonts/anton": "^0.4.2",
+    "@expo-google-fonts/bebas-neue": "^0.4.1",
+    "@expo-google-fonts/montserrat": "^0.4.2",
+    "@remotion/bundler": "4.0.534",
+    "@remotion/cli": "4.0.534",
+    "@remotion/renderer": "4.0.534",
+    "@vladmandic/face-api": "^1.7.15",
+    "commander": "^15.0.0",
+    "dotenv": "^18.0.7",
+    "ffmpeg-static": "^5.3.0",
+    "googleapis": "^185.0.0",
+    "music-metadata": "^12.1.0",
+    "open": "^11.0.4",
+    "playwright": "^1.64.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.534",
+    "ws": "^8.22.0",
+    "zod": "4.5.4"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.0",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "optionalDependencies": {
+    "@huggingface/transformers": "^4.3.1"
+  }
+}

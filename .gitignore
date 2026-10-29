@@ -1,0 +1,29 @@
+node_modules
+.env
+secrets/
+
+# Datos de trabajo de la app (se generan al usarla; settings.json guarda tokens)
+data/
+media/
+out/
+public/runs/
+public/clips/
+public/transitions/
+
+# Modelos y binarios que se descargan solos
+models/
+tools/*
+!tools/subirtiktok.py
+__pycache__/
+
+# Videos de prueba y referencia (pesados)
+videos-prueba/
+videos-capcut/
+
+# Resultados de pruebas y configuracion local
+test-results/
+playwright-report/
+.claude/settings.local.json
+.vscode/
+.impeccable/
+*.cpuprofile

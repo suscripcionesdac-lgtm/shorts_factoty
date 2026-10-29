@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="dark" />
+<meta name="theme-color" content="#000000" />
+<title>Clipper</title>
+<link rel="icon" type="image/svg+xml" href="/assets/clipper.svg" />
+<link rel="stylesheet" href="/web/app.css" />
+</head>
+<body>
+<a class="skip" href="#main">Saltar al contenido</a>
+<h1 class="sr">Clipper</h1>
+<div id="app">
+  <!-- Arriba, como en DaVinci Resolve pero con aspecto iOS: las paginas en el orden del trabajo, y Ajustes aparte en el engranaje. -->
+  <header id="appbar" class="appbar">
+    <span class="brand"><img class="logo" src="/assets/clipper.svg" alt="" width="22" height="22" />Clipper</span>
+    <nav class="pages" aria-label="Páginas">
+      <button class="nav pg" data-view="live" data-pg="live"><i data-ico="clips"></i>Media<span class="count" id="navLive"></span></button>
+      <button class="nav pg" data-view="editor" data-pg="editor"><i data-ico="editor"></i>Editar</button>
+      <button class="nav pg" data-view="clips" data-pg="clips"><i data-ico="rocket"></i>Entregar<span class="count" id="navClips"></span></button>
+      <button class="nav pg" data-view="agent" data-pg="agent"><i data-ico="bulb"></i>Aprender<span class="count" id="navAgent"></span></button>
+    </nav>
+    <div class="right">
+      <button class="iconbtn" id="notiBtn" aria-expanded="false" aria-controls="noti" aria-label="Avisos" title="Avisos"><i data-ico="bell"></i><span class="count" id="navNoti"></span></button>
+      <button class="iconbtn" id="flyBtn" aria-expanded="false" aria-controls="fly" aria-label="Canales vigilados" title="Canales vigilados"><i data-ico="eye"></i><span class="count" id="navWatch"></span></button>
+      <button class="iconbtn" id="helpBtn" data-help="" aria-label="Ayuda" title="Ayuda"><i data-ico="help"></i></button>
+      <button class="iconbtn nav" data-view="settings" aria-label="Ajustes" title="Ajustes"><i data-ico="settings"></i></button>
+    </div>
+  </header>
+  <!-- Segunda franja: las secciones de la pagina, los paneles que se muestran u ocultan, su titulo y su accion principal. -->
+  <div class="bar2">
+    <div class="subtabs" data-group="clips" role="tablist" aria-label="Entregar">
+      <button class="sub" data-view="clips">Clips</button>
+    </div>
+    <div class="subtabs" data-group="agent" role="tablist" aria-label="Aprender">
+      <button class="sub" data-view="agent">Agente</button><button class="nav sub" data-view="lab">Laboratorio</button><button class="nav sub" data-view="stats">Resultados</button>
+    </div>
+    <div id="tbar" class="tbar" role="toolbar" aria-label="Paneles de la página"></div>
+    <div id="atitle" class="atitle"></div>
+    <div id="aact" class="aact"></div>
+  </div>
+  <div id="noti" role="dialog" aria-label="Avisos" hidden>
+    <div class="label">Avisos</div>
+    <div id="notiNow"></div>
+    <div id="notiList" aria-live="polite"></div>
+    <div id="notiPerm"></div>
+  </div>
+  <div id="fly" hidden>
+    <div class="label">Canales vigilados</div>
+    <div class="mut" style="margin-bottom:8px">Se graban solos cuando entran en directo.</div>
+    <div id="watch"></div>
+    <div class="row" style="margin-top:8px"><input type="text" id="wUrl" placeholder="kick.com/canal…" aria-label="Canal a vigilar" /><button id="wAdd" class="pri fix icon" aria-label="Vigilar canal">+</button></div>
+    <div id="chips"></div>
+  </div>
+  <main id="main" tabindex="-1">
+    <section id="v-live" class="view"></section>
+    <section id="v-editor" class="view" hidden></section>
+    <section id="v-clips" class="view" hidden></section>
+    <section id="v-agent" class="view" hidden></section>
+    <section id="v-lab" class="view" hidden></section>
+    <section id="v-stats" class="view" hidden></section>
+    <section id="v-settings" class="view" hidden></section>
+  </main>
+</div>
+<div id="toasts" role="status" aria-live="polite"></div>
+<script type="module" src="/web/app.js"></script>
+</body>
+</html>

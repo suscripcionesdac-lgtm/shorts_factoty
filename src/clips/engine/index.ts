@@ -1,0 +1,20 @@
+/** Fachada del motor de Clipper: la API que usa server.ts. Cada modulo tiene una sola responsabilidad. */
+export { MEDIA, CLIPS, PORT, log } from './core';
+export type { Candidate, Source, ClipMeta, Example, Profile, Settings } from './core';
+export { nameVods, loadAll, addFile, addUrl, stop, remove, heatOf, pulse } from './sources';
+export { camsOnly, scenesOf, followFace, faceInfo, faces, liveJpeg, analyze, mark, updateCandidate, discard } from './analysis';
+export { hasYtdlp, tools, assets, autoStickers } from './tools';
+export { getTemplate, setTemplate } from './templates';
+export { testAlert } from './notify';
+export { lengthFor, trendFor, refreshTrends, setProfile, removeExample, addExample, similar } from './profile';
+export { communityRange, channelInfo, clipWindow, communityClips, community, kickOffset, clipInVod, findInVod, watchState, stoppedLive, checkWatch } from './community';
+export type { CommunityClip } from './community';
+export { clearCache, disk, storage, removeMany } from './disk';
+export { previewJob, preview, frame, wordsFor, condenseRange, autoLook, silences, autoFeedback, timeline, wave } from './preview';
+export { labState, labRun, labLevel, autoForget, refreshRefStyle, styleFor } from './lab';
+export { schoolState, study, tiktokConnect, studyLinks, tiktokDisconnect, tiktokTest } from './study';
+export { autoProgress, autoEdit } from './autoedit';
+export { fixSubs, suggestTitles, setSourceLang, translate } from './captions';
+export { exportClip, exportMany, montage, clipSpec, removeClip } from './render';
+export { updateClip, uploadClip, uploadClipTikTok, accountsState, checkAccounts, tiktokUploadConnect, tiktokUploadInstall, refreshViews, learnFromViews, tiktokStats, tiktokRisks, tiktokRisksTitled, tiktokSlotInfo } from './publish';
+export { backup, restore, updateSettings, VAR, VERSION, state } from './backup';

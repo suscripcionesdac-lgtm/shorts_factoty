@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="es">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Grabadora de voz</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font: 16px/1.5 system-ui, sans-serif; background: #111318; color: #e9eaee; max-width: 760px; margin: 0 auto; padding: 24px 16px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; } .sub { color: #9aa0ad; margin: 0 0 24px; }
+  .beat { border: 1px solid #2a2e38; border-radius: 12px; padding: 16px; margin-bottom: 12px; background: #181b22; }
+  .beat.done { border-color: #2f7d4f; } .beat.skip { opacity: .55; }
+  .n { color: #9aa0ad; font-size: 13px; } .text { font-size: 20px; margin: 6px 0 12px; }
+  button { font: inherit; padding: 8px 16px; border-radius: 8px; border: 1px solid #3a3f4c; background: #232733; color: inherit; cursor: pointer; }
+  button.rec { background: #c0392b; border-color: #c0392b; } button.primary { background: #2f6fed; border-color: #2f6fed; }
+  button:disabled { opacity: .4; cursor: default; }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; } audio { height: 32px; }
+  .meter { width: 120px; height: 8px; background: #2a2e38; border-radius: 4px; overflow: hidden; } .meter i { display: block; height: 100%; width: 0; background: #4cd07d; }
+  footer { position: fixed; left: 0; right: 0; bottom: 0; background: #111318ee; border-top: 1px solid #2a2e38; padding: 12px 16px; text-align: center; }
+  #msg { color: #f0b429; margin-left: 12px; }
+</style>
+<h1>Grabadora de voz</h1>
+<p class="sub">Graba cada frase por separado. Puedes repetir una toma las veces que quieras; solo se guarda la ultima.</p>
+<div id="list"></div>
+<footer><button id="done" class="primary">Terminar</button><span id="msg"></span></footer>
+<script>
+const DATA = __DATA__;
+const list = document.getElementById('list');
+let stream, ctx, analyser, active = null;
+
+async function mic() {
+  if (stream) return stream;
+  stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true, channelCount: 1 } });
+  ctx = new AudioContext();
+  analyser = ctx.createAnalyser();
+  ctx.createMediaStreamSource(stream).connect(analyser);
+  return stream;
+}
+
+// Recorta el silencio inicial y final y normaliza el volumen.
+function clean(samples, rate) {
+  const thr = 0.015, pad = Math.round(rate * 0.06);
+  let a = 0, b = samples.length - 1;
+  while (a < b && Math.abs(samples[a]) < thr) a++;
+  while (b > a && Math.abs(samples[b]) < thr) b--;
+  const out = samples.slice(Math.max(0, a - pad), Math.min(samples.length, b + pad));
+  let peak = 0; for (const s of out) peak = Math.max(peak, Math.abs(s));
+  const g = peak > 0 ? Math.min(0.9 / peak, 8) : 1;
+  for (let i = 0; i < out.length; i++) out[i] *= g;
+  return out;
+}
+
+function toWav(samples, rate) {
+  const buf = new ArrayBuffer(44 + samples.length * 2), v = new DataView(buf);
+  const w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + samples.length * 2, true); w(8, 'WAVEfmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+  v.setUint32(24, rate, true); v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true);
+  w(36, 'data'); v.setUint32(40, samples.length * 2, true);
+  for (let i = 0; i < samples.length; i++) v.setInt16(44 + i * 2, Math.max(-1, Math.min(1, samples[i])) * 32767, true);
+  return new Blob([buf], { type: 'audio/wav' });
+}
+
+DATA.narrations.forEach((text, i) => {
+  const needed = DATA.pending.includes(i);
+  const el = document.createElement('div');
+  el.className = 'beat' + (needed ? '' : ' skip');
+  el.innerHTML = `<div class="n">Frase ${i + 1} de ${DATA.narrations.length}${needed ? '' : ' · ya grabada, sin cambios'}</div>
+    <div class="text"></div><div class="row"><button class="b">Grabar</button><div class="meter"><i></i></div><audio controls hidden></audio></div>`;
+  el.querySelector('.text').textContent = text;
+  const btn = el.querySelector('.b'), audio = el.querySelector('audio'), bar = el.querySelector('.meter i');
+  let rec, chunks = [], raf;
+  btn.onclick = async () => {
+    if (rec && rec.state === 'recording') return rec.stop();
+    if (active) return;
+    try { await mic(); } catch (e) { return alert('No pude acceder al microfono: ' + e.message); }
+    chunks = []; rec = new MediaRecorder(stream); active = rec;
+    rec.ondataavailable = (e) => chunks.push(e.data);
+    rec.onstop = async () => {
+      active = null; cancelAnimationFrame(raf); bar.style.width = '0'; btn.textContent = 'Procesando...'; btn.className = 'b'; btn.disabled = true;
+      const decoded = await ctx.decodeAudioData(await new Blob(chunks).arrayBuffer());
+      const wav = toWav(clean(decoded.getChannelData(0).slice(), decoded.sampleRate), decoded.sampleRate);
+      await fetch('/save?beat=' + i, { method: 'POST', body: wav });
+      audio.src = URL.createObjectURL(wav); audio.hidden = false;
+      el.classList.remove('skip'); el.classList.add('done'); btn.textContent = 'Repetir'; btn.disabled = false;
+      DATA.pending = DATA.pending.filter((x) => x !== i);
+    };
+    rec.start(); btn.textContent = 'Parar'; btn.className = 'b rec';
+    const data = new Uint8Array(analyser.fftSize);
+    (function tick() { analyser.getByteTimeDomainData(data); let p = 0; for (const d of data) p = Math.max(p, Math.abs(d - 128)); bar.style.width = Math.min(100, p * 1.6) + '%'; raf = requestAnimationFrame(tick); })();
+  };
+  list.appendChild(el);
+});
+
+document.getElementById('done').onclick = async () => {
+  if (DATA.pending.length) return (document.getElementById('msg').textContent = 'Faltan frases: ' + DATA.pending.map((i) => i + 1).join(', '));
+  await fetch('/done', { method: 'POST' });
+  document.body.innerHTML = '<h1>Listo</h1><p class="sub">Ya puedes cerrar esta pestaña y volver a la terminal.</p>';
+};
+</script>
+</html>
